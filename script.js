@@ -3,13 +3,13 @@ const ringSpacing = 5000000;
 const ringSegments = 100;
 
 const planetConfig = {
-  Tatooine: { tooltip: "Desert world known for twin suns." },
+  Tatooine: { tooltip: "Desert world" },
   Pyke: { tooltip: "Trade and spice route hub." },
   Jakku: { tooltip: "Remote desert planet." },
   Bastion: { tooltip: "Imperial stronghold." },
   Mandalore: { tooltip: "Homeworld of Mandalorians." },
   Crait: { tooltip: "Salt-covered planet." },
-  Bespin: { tooltip: "Gas giant with Cloud City." },
+  Bespin: { tooltip: "Gas giant" },
   Mustafar: { tooltip: "Volcanic world." },
   Ilum: { tooltip: "Jedi Kyber crystal source." },
   Korriban: { tooltip: "Ancient Sith homeworld." },
@@ -19,18 +19,18 @@ const planetConfig = {
 };
 
 const hyperlaneConfig = [
-  { from: 'Tatooine', to: 'Pyke', color: '#FF9900', tooltip: 'Trade Route A' },
-  { from: 'Pyke', to: 'Jakku', color: '#00FF00', tooltip: 'Trade Route A' },
-  { from: 'Jakku', to: 'Bastion', color: '#00FF00', tooltip: 'Trade Route A' },
-  { from: 'Bastion', to: 'Mandalore', color: '#00FF00', tooltip: 'Trade Route A' },
-  { from: 'Mandalore', to: 'Crait', color: '#00FF00', tooltip: 'Trade Route A' },
-  { from: 'Crait', to: 'Pyke', color: '#00FF00', tooltip: 'Trade Route A' },
+  { from: 'Tatooine', to: 'Pyke', color: '#FF9900', tooltip: 'Tatooine Run' },
+  { from: 'Pyke', to: 'Jakku', color: '#00FF00', tooltip: 'Main Ring' },
+  { from: 'Jakku', to: 'Bastion', color: '#00FF00', tooltip: 'Main Ring' },
+  { from: 'Bastion', to: 'Mandalore', color: '#00FF00', tooltip: 'Main Ring' },
+  { from: 'Mandalore', to: 'Crait', color: '#00FF00', tooltip: 'Main Ring' },
+  { from: 'Crait', to: 'Pyke', color: '#00FF00', tooltip: 'Main Ring' },
 
   { from: 'Jakku', to: 'Bespin', color: '#00FF99', tooltip: 'Spice Corridor' },
   { from: 'Bespin', to: 'Mustafar', color: '#00FF99', tooltip: 'Spice Corridor' },
 
   { from: 'Bastion', to: 'Ilum', color: '#6699FF', tooltip: 'Kyber Path' },
-  { from: 'Crait', to: 'Korriban', color: '#FF9900', tooltip: 'Sith Trail' },
+  { from: 'Crait', to: 'Korriban', color: '#FF0000', tooltip: 'Sith Trail' },
 
   { from: 'Corellia', to: 'Naboo', color: '#33CCCC', tooltip: 'Core Link 1' },
   { from: 'Corellia', to: 'Jakku', color: '#33CCCC', tooltip: 'Core Link 2' },
