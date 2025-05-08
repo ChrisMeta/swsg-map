@@ -60,7 +60,7 @@ function createRing(radius) {
   for (let i = 0; i <= ringSegments; i++) {
     const angle = i * step;
     x.push(Math.cos(angle) * radius);
-    y.push(0);
+    y.push(0); // Rings are flat on Y=0
     z.push(Math.sin(angle) * radius);
   }
   return { x, y, z };
@@ -72,7 +72,7 @@ const planetData = rawGPS.trim().split('\n').map(line => {
   return {
     name,
     x: parseFloat(parts[2]),
-    y: 0,
+    y: parseFloat(parts[3]),
     z: parseFloat(parts[4]),
     tooltip: (planetConfig[name]?.tooltip) || name
   };
@@ -147,12 +147,12 @@ const layout = {
     zaxis: { visible: false },
     camera: {
       center: { x: 0, y: 0, z: 0 },
-      eye: { x: 1.5, y: 1.5, z: 1.2 }
+      eye: { x: 1.7, y: 1.2, z: 1.5 }
     }
   },
   paper_bgcolor: '#000',
   plot_bgcolor: '#000',
-  title: 'Space Engineers Planet Map with Orbit Rings & Hyperlanes'
+  title: 'Space Engineers Planet Map (3D)'
 };
 
 Plotly.newPlot('map', [
