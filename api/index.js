@@ -61,3 +61,17 @@ app.get('/status', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+// Add logging to the /status route to verify the data
+app.get('/status', async (req, res) => {
+    const planetStatuses = {};
+  
+    // Iterate through all the planets and fetch their status
+    for (const planet of planets) {
+      const status = await getServerStatus(planet.ip, planet.port);
+      planetStatuses[planet.name] = status;
+    }
+  
+    console.log(planetStatuses); // Log the entire status object to verify
+    res.json(planetStatuses); // Return the status of all planets
+  });
