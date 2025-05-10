@@ -226,12 +226,13 @@ fetch('https://swsg-map.onrender.com/status')
   .then(statusData => {
     const updatedColors = planetData.map(p => {
       const status = statusData[p.name];
-      return status === 'online' ? '#00FF00' : '#FF0000'; // green/red
+      return status === 'online' ? '#00FF00' : '#FF0000'; // green for online, red for offline
     });
 
+    // Update the color of the planet markers based on their status
     Plotly.restyle('map', {
       'marker.color': [updatedColors],
-      'marker.size': [planetTrace.marker.size * 1.5]
+      'marker.size': [planetTrace.marker.size * 1.5] // Optional: 50% larger size
     });
   })
   .catch(err => {
