@@ -30,48 +30,22 @@ const planets = [
 ];
 
 // Function to check server status
+const Gamedig = require('gamedig');
+
 async function getServerStatus(ip, port) {
   try {
-    const res = await fetch(`http://${ip}:${port}/status`);
-    if (res.ok) {
-      const status = await res.json();
-      return status;
-    } else {
-      return { status: 'offline' };
-    }
-  } catch (err) {
+    const state = await Gamedig.query({
+      type: 'ase', // or whatever game type you're using (e.g. 'arkse', 'valheim', 'quakelive')
+      host: ip,
+      port: port
+    });
+    return {
+      status: 'online',
+      name: state.name,
+      players: state.players.length,
+      maxPlayers: state.maxplayers
+    };
+  } catch (e) {
     return { status: 'offline' };
   }
 }
-
-// Route to get the status of all planets
-app.get('/status', async (req, res) => {
-  const planetStatuses = {};
-
-  // Iterate through all the planets and fetch their status
-  for (const planet of planets) {
-    const status = await getServerStatus(planet.ip, planet.port);
-    planetStatuses[planet.name] = status;
-  }
-
-  res.json(planetStatuses); // Return the status of all planets
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
-
-// Add logging to the /status route to verify the data
-app.get('/status', async (req, res) => {
-    const planetStatuses = {};
-  
-    // Iterate through all the planets and fetch their status
-    for (const planet of planets) {
-      const status = await getServerStatus(planet.ip, planet.port);
-      planetStatuses[planet.name] = status;
-    }
-  
-    console.log(planetStatuses); // Log the entire status object to verify
-    res.json(planetStatuses); // Return the status of all planets
-  });
