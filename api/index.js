@@ -29,16 +29,20 @@ const planets = [
   { name: 'Coruscant', ip: '71.187.19.128', port: 30217 }
 ];
 
-// Function to check server status
 const Gamedig = require('gamedig');
 
 async function getServerStatus(ip, port) {
+  console.log(`Checking server at ${ip}:${port}...`);
+
   try {
     const state = await Gamedig.query({
-      type: 'ase', // or whatever game type you're using (e.g. 'arkse', 'valheim', 'quakelive')
+      type: 'spaceengineers',
       host: ip,
       port: port
     });
+
+    console.log(` ${ip}:${port} is online - Name: ${state.name}, Players: ${state.players.length}/${state.maxplayers}`);
+
     return {
       status: 'online',
       name: state.name,
@@ -46,6 +50,8 @@ async function getServerStatus(ip, port) {
       maxPlayers: state.maxplayers
     };
   } catch (e) {
+    console.warn(` ${ip}:${port} is offline or unreachable. Error: ${e.message}`);
     return { status: 'offline' };
   }
 }
+
