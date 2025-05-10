@@ -221,6 +221,24 @@ const layout = {
 
 Plotly.newPlot('map', [planetTrace, ...ringTraces, ...hyperlaneTraces], layout);
 
+fetch('https://swsg-map.onrender.com/status')
+  .then(res => res.json())
+  .then(statusData => {
+    const updatedColors = planetData.map(p => {
+      const status = statusData[p.name];
+      return status === 'online' ? '#00FF00' : '#FF0000'; // green/red
+    });
+
+    Plotly.restyle('map', {
+      'marker.color': [updatedColors],
+      'marker.size': [planetTrace.marker.size * 1.5]
+    });
+  })
+  .catch(err => {
+    console.error("Failed to load server status:", err);
+  });
+
+
 // --- Handle Click and Sidebar ---
 const mapDiv = document.getElementById('map');
 const sidebar = document.getElementById('sidebar');

@@ -1,31 +1,39 @@
 const express = require('express');
+const cors = require('cors');
 const Gamedig = require('gamedig');
+
 const app = express();
-const port = process.env.PORT || 3000;
+app.use(cors());
 
-app.get('/status/:ip/:port', async (req, res) => {
-  const { ip, port } = req.params;
-  try {
-    const state = await Gamedig.query({
-      type: 'spaceengineers',
-      host: ip,
-      port: parseInt(port)
-    });
-    res.json({
-      online: true,
-      name: state.name,
-      players: state.players.length,
-      maxPlayers: state.maxplayers
-    });
-  } catch (err) {
-    res.json({ online: false, error: err.message });
-  }
+const servers = {
+  Tatooine: { ip: "71.187.19.128", port: 30202 },
+  Mandalore: { ip: "71.187.19.128", port: 30205 },
+  Naboo: { ip: "71.187.19.128", port: 30203 },
+  // Add all other planets...
+};
+
+app.get('/status', async (req, res) => {
+  const results = {};
+
+  await Promise.all(Object.entries(servers).map(async ([name, { ip, port }]) => {
+    try {
+      const state = await Gamedig.query({
+        type: 'spaceengineers',
+        host: ip,
+        port
+      });
+      results[name] = {
+        status: 'online',
+        players: state.players.length,
+        maxPlayers: state.maxplayers
+      };
+    } catch (e) {
+      results[name] = { status: 'offline' };
+    }
+  }));
+
+  res.json(results);
 });
 
-app.get('/', (req, res) => {
-  res.send('Space Engineers Server Status API');
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`API running on port ${PORT}`));
