@@ -222,22 +222,34 @@ const layout = {
 Plotly.newPlot('map', [planetTrace, ...ringTraces, ...hyperlaneTraces], layout);
 
 fetch('https://swsg-map.onrender.com/status')
-  .then(res => res.json())
+  .then(response => response.json())
   .then(statusData => {
-    const updatedColors = planetData.map(p => {
+    // Update marker colors based on status
+    const colors = planetData.map(p => {
       const status = statusData[p.name];
-      return status === 'online' ? '#00FF00' : '#FF0000'; // green for online, red for offline
+      return (status && status.status === 'online') ? '#00ff00' : '#ff0000';
     });
+    planetTrace.marker.color = colors;
 
-    // Update the color of the planet markers based on their status
-    Plotly.restyle('map', {
-      'marker.color': [updatedColors],
-      'marker.size': [planetTrace.marker.size * 1.5] // Optional: 50% larger size
-    });
+    // Populate server status list in sidebar
+    const serverList = document.getElementById('server-status-list');
+    if (serverList) {
+      serverList.innerHTML = '';
+      Object.entries(statusData).forEach(([planetName, data]) => {
+        const li = document.createElement('li');
+        li.textContent = `${planetName}: ${data.status}`;
+        li.style.color = data.status === 'online' ? 'limegreen' : 'red';
+        serverList.appendChild(li);
+      });
+    }
+
+    Plotly.newPlot('map', [planetTrace, ...ringTraces, ...hyperlaneTraces], layout);
   })
   .catch(err => {
-    console.error("Failed to load server status:", err);
+    console.error('Failed to load server status:', err);
+    Plotly.newPlot('map', [planetTrace, ...ringTraces, ...hyperlaneTraces], layout);
   });
+
 
 
 // --- Handle Click and Sidebar ---
