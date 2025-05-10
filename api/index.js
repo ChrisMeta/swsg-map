@@ -59,20 +59,32 @@ let statusCache = {};
 let lastCheck = 0;
 const CACHE_DURATION = 60000; // 1 minute cache
 
-app.get("/api/server-status", async (req, res) => {
-    const { ip, port } = req.query;
-    try {
-      const state = await Gamedig.query({
-        type: "spaceengineers",
-        host: ip,
-        port: parseInt(port)
+app.get('/status', async (req, res) => {
+  // Check if we need to refresh cache
+  const now = Date.now();
+  if (now - lastCheck > CACHE_DURATION || Object.keys(statusCache).length === 0) {
+    console.log("Cache expired or empty, starting background refresh");
+    
+    // Return cached data immediately if available, otherwise initialize with all offline
+    if (Object.keys(statusCache).length === 0) {
+      planets.forEach(planet => {
+        statusCache[planet.name] = 'offline';
       });
-      res.json({ online: true, players: state.players.length, maxPlayers: state.maxplayers });
-    } catch (e) {
-      res.json({ online: false });
     }
+<<<<<<< HEAD
   });
   
+=======
+    
+    // Start background refresh
+    refreshStatusCache();
+  }
+  
+  // Return current cache state
+  res.json(statusCache);
+});
+
+>>>>>>> parent of 4e161b2 (Update index.js)
 // Function to refresh the cache in the background
 async function refreshStatusCache() {
   lastCheck = Date.now();
