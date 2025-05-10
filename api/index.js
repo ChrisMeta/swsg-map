@@ -29,7 +29,7 @@ const planets = [
   { name: 'Korriban', ip: '71.187.19.128', port: 30218 }
 ];
 
-// Function to check server status with error handling
+// Function to check server status with a shorter timeout
 async function getServerStatus(ip, port) {
   console.log(`Checking server at ${ip}:${port}...`);
   try {
@@ -37,83 +37,79 @@ async function getServerStatus(ip, port) {
       type: 'spaceengineers',
       host: ip,
       port: port,
-      timeout: 5000 // 5 seconds timeout to avoid long waits
+      timeout: 3000, // Shorter timeout to prevent hanging
+      maxAttempts: 1  // Only try once
     });
     
-    console.log(` ${ip}:${port} is online - Name: ${state.name}, Players: ${state.players.length}/${state.maxplayers}`);
-    return {
-      status: 'online',
-      name: state.name,
-      players: state.players.length,
-      maxPlayers: state.maxplayers
-    };
+    console.log(`${ip}:${port} is online - ${state.name}`);
+    return 'online';
   } catch (e) {
-    console.warn(` ${ip}:${port} is offline or unreachable. Error: ${e.message}`);
-    return { status: 'offline' };
+    console.warn(`${ip}:${port} is offline or unreachable`);
+    return 'offline';
   }
 }
 
-// Basic home route
+// Basic health check route
 app.get('/', (req, res) => {
-  res.send('Space Engineers Server Status API');
+  res.send('Space Engineers Server Status API is running');
 });
 
-// Status endpoint
+// Simple status check route - returns immediately with cached data if available
+let statusCache = {};
+let lastCheck = 0;
+const CACHE_DURATION = 60000; // 1 minute cache
+
 app.get('/status', async (req, res) => {
-  try {
-    // Create a status object with all planets initialized as offline
-    const statusData = {};
-    planets.forEach(planet => {
-      statusData[planet.name] = 'offline';
-    });
-
-    // Only check a few planets at a time to avoid overloading
-    const planetBatches = [];
-    const batchSize = 3;
+  // Check if we need to refresh cache
+  const now = Date.now();
+  if (now - lastCheck > CACHE_DURATION || Object.keys(statusCache).length === 0) {
+    console.log("Cache expired or empty, starting background refresh");
     
-    for (let i = 0; i < planets.length; i += batchSize) {
-      planetBatches.push(planets.slice(i, i + batchSize));
-    }
-
-    // Process each batch sequentially
-    for (const batch of planetBatches) {
-      const batchPromises = batch.map(planet => 
-        getServerStatus(planet.ip, planet.port)
-          .then(result => {
-            statusData[planet.name] = result.status;
-          })
-          .catch(err => {
-            console.error(`Error checking ${planet.name}: ${err.message}`);
-            // Status already set to offline by default
-          })
-      );
-      
-      // Wait for this batch to complete before starting the next one
-      await Promise.all(batchPromises);
+    // Return cached data immediately if available, otherwise initialize with all offline
+    if (Object.keys(statusCache).length === 0) {
+      planets.forEach(planet => {
+        statusCache[planet.name] = 'offline';
+      });
     }
     
-    res.json(statusData);
-  } catch (error) {
-    console.error('Error in /status route:', error);
-    res.status(500).json({ error: 'An error occurred while checking server statuses' });
+    // Start background refresh
+    refreshStatusCache();
   }
+  
+  // Return current cache state
+  res.json(statusCache);
 });
 
-// Start the server with error handling
-const server = app.listen(port, () => {
+// Function to refresh the cache in the background
+async function refreshStatusCache() {
+  lastCheck = Date.now();
+  
+  for (const planet of planets) {
+    try {
+      const status = await getServerStatus(planet.ip, planet.port);
+      statusCache[planet.name] = status;
+    } catch (err) {
+      console.error(`Error checking ${planet.name}:`, err);
+      statusCache[planet.name] = 'offline';
+    }
+  }
+  
+  console.log("Cache refresh complete");
+}
+
+// Start the server
+app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-}).on('error', (err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
+  
+  // Initialize the cache on startup
+  refreshStatusCache();
 });
 
-// Handle uncaught exceptions and unhandled rejections to prevent crashing
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-  // Don't exit the process, but log the error
-});
-
+// Handle unhandled exceptions and rejections
 process.on('unhandledRejection', (reason, promise) => {
   console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  // Don't exit the process, but log the error
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
 });
