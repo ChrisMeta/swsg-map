@@ -1,7 +1,7 @@
 // Import necessary packages
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
+const Gamedig = require('gamedig');
 
 // Initialize Express app
 const app = express();
@@ -10,7 +10,7 @@ const port = process.env.PORT || 10000;
 // Middleware for CORS
 app.use(cors());
 
-// Array of planets (you may want to extend this with your full list of planets)
+// Array of planets
 const planets = [
   { name: 'Mandalore', ip: '71.187.19.128', port: 30205 },
   { name: 'Tatooine', ip: '71.187.19.128', port: 30202 },
@@ -29,24 +29,51 @@ const planets = [
   { name: 'Coruscant', ip: '71.187.19.128', port: 30217 }
 ];
 
-const Gamedig = require('gamedig');
+// Cache to store planet statuses
+let planetStatusCache = {};
+let lastUpdated = null;
 
-app.get('/status', async (req, res) => {
-  const planetStatuses = {};
+// Function to query status for all planets
+async function updatePlanetStatuses() {
+  console.log('Updating planet statuses...');
+
+  const newStatuses = {};
 
   for (const planet of planets) {
     const status = await getServerStatus(planet.ip, planet.port);
-    planetStatuses[planet.name] = status;
+    newStatuses[planet.name] = status;
   }
 
-  res.json(planetStatuses);
+  planetStatusCache = newStatuses;
+  lastUpdated = new Date();
+  console.log(`Planet statuses updated at ${lastUpdated.toISOString()}`);
+}
+
+// Call update immediately on startup
+updatePlanetStatuses();
+
+// Refresh every 60 seconds
+setInterval(updatePlanetStatuses, 60 * 1000);
+
+// Endpoint to get status from cache
+app.get('/status', (req, res) => {
+  res.json(planetStatusCache);
 });
 
-// Start the server
+// Optional: Endpoint to get metadata
+app.get('/status-meta', (req, res) => {
+  res.json({
+    lastUpdated,
+    nextUpdateInSeconds: 60
+  });
+});
+
+// Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
 
+// Function to query a single server
 async function getServerStatus(ip, port) {
   console.log(`Checking server at ${ip}:${port}...`);
 
@@ -70,4 +97,3 @@ async function getServerStatus(ip, port) {
     return { status: 'offline' };
   }
 }
-
