@@ -115,45 +115,25 @@ const planetData = rawGPS.trim().split('\n').map(line => {
 
 const planetMap = Object.fromEntries(planetData.map(p => [p.name, p]));
 
- 
-
-async function buildPlanetTrace() {
-  const statusData = await fetchStatus();
-
-  const colors = planetData.map(p => {
-    const server = statusData[p.name];
-    if (!server || server.status !== 'online') return 'red';
-    return 'green';
-  });
-
-  return {
-    x: planetData.map(p => p.x),
-    y: planetData.map(p => p.y),
-    z: planetData.map(p => p.z),
-    text: planetData.map(p => p.name),
-    hovertext: planetData.map(p => {
-      const server = statusData[p.name];
-      if (server && server.status === 'online') {
-        return `${p.name}<br>Online<br>👥 ${server.players}/${server.maxPlayers}`;
-      } else {
-        return `${p.name}<br>Offline`;
-      }
-    }),
-    hoverinfo: 'text',
-    mode: 'markers+text',
-    type: 'scatter3d',
-    marker: {
-      size: 9, // 50% larger than previous size 6
-      color: colors,
-      line: { color: 'black', width: 1 }
-    },
-    textposition: 'top center',
-    name: 'Planets',
-    showlegend: true,
-    legendgroup: 'planets'
-  };
-}
-
+const planetTrace = {
+  x: planetData.map(p => p.x),
+  y: planetData.map(p => p.y),
+  z: planetData.map(p => p.z),
+  text: planetData.map(p => p.name),
+  hovertext: planetData.map(p => p.tooltip),
+  hoverinfo: 'text',
+  mode: 'markers+text',
+  type: 'scatter3d',
+  marker: {
+    size: 6,
+    color: '#75C9F1',
+    line: { color: 'black', width: 1 }
+  },
+  textposition: 'top center',
+  name: 'Planets',
+  showlegend: true,
+  legendgroup: 'planets'
+};
 
 const ringTraces = [];
 for (let i = 1; i <= ringCount; i++) {
@@ -241,17 +221,22 @@ const layout = {
 
 Plotly.newPlot('map', [planetTrace, ...ringTraces, ...hyperlaneTraces], layout);
 
-async function fetchStatus() {
-  try {
-    const res = await fetch('https://swsg-map.onrender.com/status');
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    console.error("Failed to fetch server status:", err);
-    return {};
-  }
-}
+fetch('https://swsg-map.onrender.com/status')
+  .then(res => res.json())
+  .then(statusData => {
+    const updatedColors = planetData.map(p => {
+      const status = statusData[p.name];
+      return status === 'online' ? '#00FF00' : '#FF0000'; // green/red
+    });
 
+    Plotly.restyle('map', {
+      'marker.color': [updatedColors],
+      'marker.size': [planetTrace.marker.size * 1.5]
+    });
+  })
+  .catch(err => {
+    console.error("Failed to load server status:", err);
+  });
 
 
 // --- Handle Click and Sidebar ---
