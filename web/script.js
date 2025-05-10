@@ -134,9 +134,9 @@ async function buildPlanetTrace() {
     hovertext: planetData.map(p => {
       const server = statusData[p.name];
       if (server && server.status === 'online') {
-        return `${p.name}<br>🟢 Online<br>👥 ${server.players}/${server.maxPlayers}`;
+        return `${p.name}<br>Online<br>👥 ${server.players}/${server.maxPlayers}`;
       } else {
-        return `${p.name}<br>🔴 Offline`;
+        return `${p.name}<br>Offline`;
       }
     }),
     hoverinfo: 'text',
