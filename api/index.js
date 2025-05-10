@@ -72,7 +72,7 @@ app.get("/api/server-status", async (req, res) => {
       res.json({ online: false });
     }
   });
-
+  
 // Function to refresh the cache in the background
 async function refreshStatusCache() {
   lastCheck = Date.now();
