@@ -26,7 +26,8 @@ const planets = [
   { name: 'Bastion', ip: '71.187.19.128', port: 30214 },
   { name: 'Pyke', ip: '71.187.19.128', port: 30215 },
   { name: 'Corellia', ip: '71.187.19.128', port: 30216 },
-  { name: 'Coruscant', ip: '71.187.19.128', port: 30201 }
+  { name: 'Coruscant', ip: '71.187.19.128', port: 30217 },
+  { name: 'Korriban', ip: '71.187.19.128', port: 30201 }
 ];
 
 // Cache to store planet statuses
